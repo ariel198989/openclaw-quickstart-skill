@@ -115,31 +115,44 @@ You save it. Type "saved".
 
 ---
 
-## Scene 7 — Anthropic API Key (2 min)
+## Scene 7 — LLM Auth (Sign in with ChatGPT, or API key)
 
-**What the wizard does:**
-- Opens a new tab → `console.anthropic.com/settings/keys`
+**What the wizard does:** Asks how you want the agent to authenticate:
 
-**What you see:** Anthropic Console. If not logged in:
+> "How should the agent authenticate?
+> **A)** Sign in with ChatGPT — uses your ChatGPT Plus ($20) or Pro ($200) subscription. Flat rate, no per-token billing. **Recommended if you have a subscription.**
+> **B)** Sign in with Claude — same idea via your Claude.ai Max account.
+> **C)** Bring your own API key — Anthropic / OpenAI / Gemini / Grok."
 
-> "Sign in to Anthropic Console (or create an account if you don't have one). Say 'ready' when you see the API Keys page."
+### Path A — Sign in with ChatGPT (2026 default)
 
-After login, the wizard:
-- Clicks "Create Key"
-- Types name: `OPENCLAW`
-- Clicks Create
-- Takes a screenshot of the key dialog (so you have visual backup)
-- Copies the `sk-ant-api03-...` value
-- Switches back to the Hostinger tab
-- Pastes the key into the "Anthropic API Key" field
+Once the container is up (Scene 8), the wizard runs in the OpenClaw chat:
 
-**What you see:** Anthropic shows the key once, then the wizard says:
+```
+openclaw onboard --auth-choice openai-codex
+```
 
-> ⚠️ **Anthropic only shows this key ONCE. I've pasted it into Hostinger AND screenshotted it. Copy from the screenshot to your password manager too — Anthropic won't reveal it again.**
+OpenClaw returns an OAuth URL. The wizard opens it in a new tab.
 
-Wizard asks about optional keys:
+**What you see:** OpenAI consent screen.
 
-> "OpenAI / Gemini / Grok keys are optional. Want to add any now or skip? (You can always add later.)"
+> "Sign in to your ChatGPT account if needed, then click **Continue** to authorize OpenClaw to use your subscription."
+
+You click Continue. OpenClaw stores the refresh token on the VPS. **No copy-paste, no API key, no key management.**
+
+✓ Codex models are now available to your agent at the flat subscription rate.
+
+### Path B — Sign in with Claude
+
+Same shape:
+```
+openclaw onboard --auth-choice anthropic-claude
+```
+Opens Anthropic OAuth → Allow → done.
+
+### Path C — Manual API key
+
+The wizard opens `console.anthropic.com/settings/keys` (or `platform.openai.com/api-keys`), creates a key named `OPENCLAW`, screenshots it, and pastes it into the Hostinger config form. You save a backup copy.
 
 ---
 
@@ -252,7 +265,8 @@ You confirm Tailscale auth in browser when prompted. That's it.
 | Hostinger account password | Your password manager. Never seen by wizard. |
 | Credit card | Hostinger. Never seen by wizard. |
 | Gateway Token | Your password manager + Hostinger VPS config |
-| Anthropic API Key | Your password manager + Hostinger VPS config |
+| LLM auth (OAuth path) | Refresh token on the VPS. Revoke from your ChatGPT/Claude account at any time. |
+| Anthropic API Key (manual path) | Your password manager + Hostinger VPS config |
 | Telegram Bot Token | OpenClaw config (encrypted on VPS) |
 | Pairing Code | Single-use, expires after pairing |
 

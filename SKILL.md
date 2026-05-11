@@ -109,10 +109,10 @@ mcp__playwright__browser_snapshot()
 
 אחרי תשלום, Hostinger יציג טופס עם השדות:
 - Gateway Token
-- Anthropic API Key
-- OpenAI API Key
-- Gemini API Key
-- X (Grok) API Key
+- Anthropic API Key (אופציונלי)
+- OpenAI API Key (אופציונלי)
+- Gemini API Key (אופציונלי)
+- X (Grok) API Key (אופציונלי)
 
 **Gateway Token** — תייצר אחד אקראי חזק:
 
@@ -130,11 +130,64 @@ token = secrets.token_urlsafe(48)
 mcp__playwright__browser_fill_form({ fields: [{name:"Gateway Token", value:"<TOKEN>"}] })
 ```
 
-**Anthropic API Key** — אם אין למשתמש, עבור לשלב 6. אם יש — מלא ומדלג.
+**אופציה לאימות LLM provider** — שאל את המשתמש:
+
+> איך תרצה להפעיל את הסוכן?
+> A) **Sign in with ChatGPT** — משתמש בsubscription של ChatGPT Plus ($20) או Pro ($200), flat rate, אין billing לפי token. מומלץ אם יש לך מנוי.
+> B) **Sign in with Claude** — דומה, דרך חשבון Claude.ai (אם תומך)
+> C) **API key** — Anthropic/OpenAI/Gemini/Grok, pay-as-you-go
+
+לפי בחירה:
+- A → דלג להמשך (לא צריך למלא API key בטופס) → שלב 6A
+- B → דלג → שלב 6B
+- C → שלב 6C
+
+לחץ Submit על הטופס (השדות הריקים יישארו ריקים — OAuth ייעשה אחרי deploy):
+
+```
+mcp__playwright__browser_click({ element: "Submit", ref: "..." })
+```
 
 ---
 
-## שלב 6 — יצירת מפתח Anthropic (טאב נפרד)
+## שלב 6A — Sign in with ChatGPT (OAuth, מומלץ)
+
+אחרי שה-container רץ ו-OpenClaw UI פתוח (שלב 8), פתח terminal של ה-container דרך Hostinger Docker Manager → "Terminal", או דרך OpenClaw chat אם נתמך:
+
+```
+openclaw onboard --auth-choice openai-codex
+```
+
+הפקודה תדפיס URL OAuth. הסקיל יפתח את ה-URL בטאב חדש:
+
+```
+mcp__playwright__browser_tabs({ action: "new" })
+mcp__playwright__browser_navigate({ url: "<oauth_url>" })
+mcp__playwright__browser_snapshot()
+```
+
+מסך OpenAI Consent מוצג. תגיד למשתמש:
+
+> תתחבר לחשבון ChatGPT שלך (אם לא מחובר). אז תלחץ "Continue" / "Authorize" כדי לאשר ל-OpenClaw להשתמש במנוי שלך.
+
+המשתמש מאשר. OpenClaw מקבל refresh token, נשמר אצלך ב-VPS. אין copy-paste של key.
+
+✓ סיימת. Codex models זמינים לסוכן דרך ה-subscription שלך.
+
+---
+
+## שלב 6B — Sign in with Claude (אם נתמך)
+
+דומה ל-6A:
+```
+openclaw onboard --auth-choice anthropic-claude
+```
+
+אם לא נתמך — OpenClaw יחזיר שגיאה. דלג ל-6C.
+
+---
+
+## שלב 6C — יצירת מפתח API ידני (fallback)
 
 ```
 mcp__playwright__browser_tabs({ action: "new" })

@@ -180,10 +180,10 @@
       </div>
 
       <div class="mt-10 flex flex-wrap justify-center gap-6 text-xs text-gray-500">
-        <span>✓ No vendor lock-in</span>
-        <span>✓ Keys stay on your machine</span>
+        <span>✓ Sign in with ChatGPT — no API key juggling</span>
         <span>✓ Open source MIT</span>
         <span>✓ ~$9/month VPS</span>
+        <span>✓ Your own box, your keys</span>
       </div>
     </div>
   </div>
@@ -217,8 +217,8 @@
       </div>
       <div class="scene-card p-6">
         <div class="text-claw-500 text-2xl mb-3">🔑</div>
-        <h3 class="font-semibold text-lg mb-2">Your keys, your data</h3>
-        <p class="text-sm text-gray-400">API keys live in your Hostinger config. Wizard never touches a third-party server. Cancel anytime — you keep everything.</p>
+        <h3 class="font-semibold text-lg mb-2">Sign in with ChatGPT</h3>
+        <p class="text-sm text-gray-400">One OAuth click. Uses your ChatGPT Plus / Pro subscription — flat rate, no per-token billing, no API key to manage. (Claude.ai login + manual API keys also supported.)</p>
       </div>
       <div class="scene-card p-6">
         <div class="text-claw-500 text-2xl mb-3">🛠️</div>
@@ -297,16 +297,17 @@
         <div class="text-xs text-gray-500 font-mono">10s</div>
       </div>
       <!-- Scene 6 -->
-      <div class="scene-card p-5 flex items-center gap-4">
+      <div class="scene-card p-5 flex items-center gap-4 border-claw-500/40" style="border-color: rgba(230,62,92,0.4)">
         <div class="text-2xl font-bold text-claw-500 w-10">06</div>
         <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="font-semibold">Create Anthropic API key</span>
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="font-semibold">Sign in with ChatGPT</span>
             <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard + you</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-claw-500/20 text-claw-300 border border-claw-500/40">recommended</span>
           </div>
-          <p class="text-sm text-gray-400">Opens Anthropic Console, creates a key named OPENCLAW, screenshots it, pastes it into Hostinger.</p>
+          <p class="text-sm text-gray-400">One OAuth click. Uses your ChatGPT Plus ($20) or Pro ($200) subscription — flat rate, no API key, no token billing. (Manual API key fallback also supported.)</p>
         </div>
-        <div class="text-xs text-gray-500 font-mono">2m</div>
+        <div class="text-xs text-gray-500 font-mono">1m</div>
       </div>
       <!-- Scene 7 -->
       <div class="scene-card p-5 flex items-center gap-4">
@@ -453,7 +454,8 @@
           <tr><td class="px-5 py-3">Hostinger account password</td><td class="px-5 py-3 text-gray-400">Your password manager. Wizard never sees it.</td></tr>
           <tr><td class="px-5 py-3">Credit card / PayPal</td><td class="px-5 py-3 text-gray-400">Hostinger. Wizard never sees it.</td></tr>
           <tr><td class="px-5 py-3">Gateway token</td><td class="px-5 py-3 text-gray-400">Your password manager + Hostinger VPS config</td></tr>
-          <tr><td class="px-5 py-3">Anthropic API key</td><td class="px-5 py-3 text-gray-400">Your password manager + Hostinger VPS config</td></tr>
+          <tr><td class="px-5 py-3">LLM auth (OAuth path)</td><td class="px-5 py-3 text-gray-400">Refresh token on YOUR VPS. Revoke from ChatGPT / Claude account anytime.</td></tr>
+          <tr><td class="px-5 py-3">API key (manual path, optional)</td><td class="px-5 py-3 text-gray-400">Your password manager + Hostinger VPS config</td></tr>
           <tr><td class="px-5 py-3">Telegram bot token</td><td class="px-5 py-3 text-gray-400">OpenClaw config on YOUR VPS</td></tr>
           <tr><td class="px-5 py-3">Pairing code</td><td class="px-5 py-3 text-gray-400">Single-use. Expires after pairing.</td></tr>
         </tbody>
@@ -497,9 +499,10 @@
       <h3 class="text-xl font-bold mt-8 mb-4">למה?</h3>
       <ul class="space-y-2 text-gray-300">
         <li>✓ סוכן AI אישי שרץ 24/7, בודק מיילים, מזמין טיסות, עוקב אחרי מחירים</li>
+        <li>✓ <strong>Sign in with ChatGPT</strong> — מנוי ChatGPT Plus/Pro שלך מספיק, ללא API key</li>
         <li>✓ אתה הבעלים — VPS שלך, מפתחות שלך, נתונים שלך</li>
         <li>✓ עברית מלאה, לא משנה אם הבוט במחשב או בטלגרם</li>
-        <li>✓ עלות: ~$9 לחודש ל-VPS + עלות API לפי שימוש</li>
+        <li>✓ עלות: ~$9 לחודש ל-VPS + ($20 ChatGPT Plus אם יש לך כבר)</li>
         <li>✓ אפס vendor lock-in — תבטל מתי שתרצה, הכל שלך</li>
       </ul>
 
