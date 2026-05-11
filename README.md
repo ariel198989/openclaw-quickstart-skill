@@ -54,6 +54,10 @@ Or just ask:
 
 The wizard takes over from there.
 
+## See It In Action
+
+Full scene-by-scene walkthrough of what the wizard does and what you see: **[WALKTHROUGH.md](./WALKTHROUGH.md)**.
+
 ## What it does (12 steps)
 
 1. Intro — opens `openclaw.ai`
