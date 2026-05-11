@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>OpenClaw Quickstart — zero to self-hosted AI agent in 15 minutes</title>
 <meta name="description" content="Interactive Playwright walkthrough that takes you from zero to a running self-hosted OpenClaw AI agent on Hostinger VPS, connected to Telegram, optionally hardened with Tailscale + UFW + Fail2ban. Free, open source, ~15 minutes." />
 <meta property="og:title" content="OpenClaw Quickstart" />
@@ -49,7 +49,22 @@
 </script>
 <style>
   :root { color-scheme: dark; }
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { overflow-x: hidden; }
   body { background: #0a0a0f; color: #e5e7eb; font-family: 'Inter', 'Heebo', system-ui, sans-serif; }
+  /* RTL fixes — proper logical-property flips inside Hebrew sections */
+  [dir="rtl"] { font-family: 'Heebo', 'Inter', system-ui, sans-serif; }
+  [dir="rtl"] ul, [dir="rtl"] ol { padding-right: 0; }
+  [dir="rtl"] code { direction: ltr; unicode-bidi: embed; display: inline-block; }
+  [dir="rtl"] .scene-card { text-align: right; }
+  [dir="rtl"] .check-list li::before {
+    content: '✓'; color: #4ade80; margin-left: 0.5rem; font-weight: bold;
+  }
+  /* Mobile-friendly terminal — no overflow */
+  @media (max-width: 640px) {
+    .term code { font-size: 11px; line-height: 1.5; }
+    .term .prompt { font-size: 11px; }
+  }
   .grad-bg {
     background: radial-gradient(1200px 600px at 20% -10%, rgba(230,62,92,0.18), transparent 60%),
                 radial-gradient(900px 500px at 80% 10%, rgba(120,80,255,0.12), transparent 60%),
@@ -79,6 +94,11 @@
     transition: all 0.2s;
   }
   .scene-card:hover { border-color: rgba(230,62,92,0.35); transform: translateY(-2px); }
+  @media (max-width: 640px) {
+    .scene-card.p-5 { padding: 0.875rem 1rem; }
+    .scene-card .text-2xl { font-size: 1.25rem; }
+    .scene-card .w-10 { width: 1.75rem; }
+  }
   .badge-you { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
   .badge-wiz { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
   .copy-btn { transition: all 0.15s; }
@@ -104,16 +124,16 @@
 
 <!-- NAV -->
 <nav class="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/5">
-  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-2 font-extrabold text-lg">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2 font-extrabold text-base sm:text-lg">
       <span class="text-claw-500">●</span>
       <span>OpenClaw Quickstart</span>
     </div>
-    <div class="flex items-center gap-6 text-sm text-gray-400">
-      <a href="#how" class="hover:text-white transition">How it works</a>
-      <a href="#install" class="hover:text-white transition">Install</a>
-      <a href="#security" class="hover:text-white transition">Security</a>
-      <a href="https://github.com/ariel198989/openclaw-quickstart-skill" target="_blank" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition">GitHub →</a>
+    <div class="flex items-center gap-2 sm:gap-6 text-sm text-gray-400">
+      <a href="#how" class="hidden sm:inline hover:text-white transition">How it works</a>
+      <a href="#install" class="hidden sm:inline hover:text-white transition">Install</a>
+      <a href="#security" class="hidden md:inline hover:text-white transition">Security</a>
+      <a href="https://github.com/ariel198989/openclaw-quickstart-skill" target="_blank" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition text-xs sm:text-sm">GitHub →</a>
     </div>
   </div>
 </nav>
@@ -121,16 +141,16 @@
 <!-- HERO -->
 <section class="grad-bg relative overflow-hidden">
   <div class="grid-bg absolute inset-0"></div>
-  <div class="relative max-w-6xl mx-auto px-6 pt-20 pb-24">
+  <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-20 pb-16 sm:pb-24">
     <div class="text-center max-w-3xl mx-auto">
-      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 mb-6">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 mb-5 sm:mb-6">
         <span class="dot bg-green-400 animate-pulse"></span>
         Free · Open source · MIT licensed
       </div>
-      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight mb-6">
+      <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-5 sm:mb-6">
         Zero to your own AI agent<br /><span class="gradient-text">in 15 minutes.</span>
       </h1>
-      <p class="text-lg md:text-xl text-gray-400 leading-relaxed mb-10">
+      <p class="text-base sm:text-lg md:text-xl text-gray-400 leading-relaxed mb-8 sm:mb-10 px-2 sm:px-0">
         A Claude Code wizard that drives your browser, sets up a self-hosted OpenClaw agent on your own VPS,
         wires it to Telegram, and (optionally) hardens it with Tailscale + UFW + Fail2ban.
         <br />
@@ -139,13 +159,13 @@
 
       <!-- INSTALL COMMAND -->
       <div class="term mx-auto max-w-2xl text-left">
-        <div class="term-bar px-4 py-2.5 flex items-center gap-2">
+        <div class="term-bar px-3 sm:px-4 py-2 sm:py-2.5 flex items-center gap-2">
           <span class="dot bg-red-500/70"></span>
           <span class="dot bg-yellow-500/70"></span>
           <span class="dot bg-green-500/70"></span>
-          <div class="flex-1 text-center text-xs text-gray-500 font-mono">Claude Code · install</div>
+          <div class="flex-1 text-center text-xs text-gray-500 font-mono">install</div>
         </div>
-        <div class="p-5 font-mono text-sm">
+        <div class="p-3 sm:p-5 font-mono text-sm">
           <!-- tabs -->
           <div class="flex gap-1 mb-3 text-xs">
             <button onclick="showTab('win')" id="tab-win" class="tab-btn px-3 py-1 rounded-md bg-white/10 text-white">Windows</button>
@@ -153,19 +173,19 @@
           </div>
           <div id="cmd-win" class="cmd-block">
             <div class="flex items-start gap-2">
-              <span class="text-claw-500 select-none">PS&gt;</span>
-              <code id="code-win" class="flex-1 text-gray-200 break-all">iwr https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.ps1 | iex</code>
-              <button onclick="copyCmd('code-win', this)" class="copy-btn px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
+              <span class="prompt text-claw-500 select-none flex-none">PS&gt;</span>
+              <code id="code-win" class="flex-1 min-w-0 text-gray-200 break-all">iwr https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.ps1 | iex</code>
+              <button onclick="copyCmd('code-win', this)" class="copy-btn flex-none px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
             </div>
           </div>
           <div id="cmd-mac" class="cmd-block hidden">
             <div class="flex items-start gap-2">
-              <span class="text-claw-500 select-none">$</span>
-              <code id="code-mac" class="flex-1 text-gray-200 break-all">curl -fsSL https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.sh | bash</code>
-              <button onclick="copyCmd('code-mac', this)" class="copy-btn px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
+              <span class="prompt text-claw-500 select-none flex-none">$</span>
+              <code id="code-mac" class="flex-1 min-w-0 text-gray-200 break-all">curl -fsSL https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.sh | bash</code>
+              <button onclick="copyCmd('code-mac', this)" class="copy-btn flex-none px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
             </div>
           </div>
-          <div class="mt-4 pt-4 border-t border-white/5 text-xs text-gray-500">
+          <div class="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/5 text-xs text-gray-500">
             Then in Claude Code: <code class="text-claw-400">/openclaw-quickstart</code>
           </div>
         </div>
@@ -190,11 +210,11 @@
 </section>
 
 <!-- WHAT YOU GET -->
-<section class="py-20 px-6">
+<section class="py-14 sm:py-20 px-4 sm:px-6">
   <div class="max-w-5xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">What you actually get</h2>
-    <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto">A real agent running on real hardware that you control. Not a demo. Not a wrapper. Yours.</p>
-    <div class="grid md:grid-cols-3 gap-5">
+    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3">What you actually get</h2>
+    <p class="text-center text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base px-2">A real agent running on real hardware that you control. Not a demo. Not a wrapper. Yours.</p>
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
       <div class="scene-card p-6">
         <div class="text-claw-500 text-2xl mb-3">⚡</div>
         <h3 class="font-semibold text-lg mb-2">Always-on agent</h3>
@@ -230,10 +250,10 @@
 </section>
 
 <!-- HOW IT WORKS -->
-<section id="how" class="py-20 px-6 bg-gradient-to-b from-transparent via-claw-900/5 to-transparent">
+<section id="how" class="py-14 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-transparent via-claw-900/5 to-transparent">
   <div class="max-w-5xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">13 scenes. ~15 minutes.</h2>
-    <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto">The wizard drives your browser. You step in only for password, payment, and sending one test message.</p>
+    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3">13 scenes. ~15 minutes.</h2>
+    <p class="text-center text-gray-500 mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base px-2">The wizard drives your browser. You step in only for password, payment, and sending one test message.</p>
 
     <div class="space-y-3">
       <!-- Scene 1 -->
@@ -393,10 +413,10 @@
 </section>
 
 <!-- INSTALL -->
-<section id="install" class="py-20 px-6">
+<section id="install" class="py-14 sm:py-20 px-4 sm:px-6">
   <div class="max-w-3xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">Install in one line</h2>
-    <p class="text-center text-gray-500 mb-10">Free. No accounts to create here. The installer just drops the skill into your local Claude Code.</p>
+    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3">Install in one line</h2>
+    <p class="text-center text-gray-500 mb-8 sm:mb-10 text-sm sm:text-base px-2">Free. No accounts to create here. The installer just drops the skill into your local Claude Code.</p>
 
     <ol class="space-y-6">
       <li class="flex gap-4">
@@ -437,27 +457,27 @@
 </section>
 
 <!-- SECURITY -->
-<section id="security" class="py-20 px-6 bg-gradient-to-b from-transparent via-black/40 to-transparent">
+<section id="security" class="py-14 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-transparent via-black/40 to-transparent">
   <div class="max-w-4xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">Where each secret lives</h2>
-    <p class="text-center text-gray-500 mb-10">No secret touches a third-party server. Read the source — it's all in one file.</p>
+    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3">Where each secret lives</h2>
+    <p class="text-center text-gray-500 mb-8 sm:mb-10 text-sm sm:text-base px-2">No secret touches a third-party server. Read the source — it's all in one file.</p>
 
     <div class="scene-card overflow-hidden">
-      <table class="w-full text-sm">
+      <table class="w-full text-xs sm:text-sm">
         <thead class="bg-white/5 text-gray-400">
           <tr>
-            <th class="text-left px-5 py-3 font-medium">Secret</th>
-            <th class="text-left px-5 py-3 font-medium">Where it lives</th>
+            <th class="text-left px-3 sm:px-5 py-2 sm:py-3 font-medium">Secret</th>
+            <th class="text-left px-3 sm:px-5 py-2 sm:py-3 font-medium">Where it lives</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-white/5">
-          <tr><td class="px-5 py-3">Hostinger account password</td><td class="px-5 py-3 text-gray-400">Your password manager. Wizard never sees it.</td></tr>
-          <tr><td class="px-5 py-3">Credit card / PayPal</td><td class="px-5 py-3 text-gray-400">Hostinger. Wizard never sees it.</td></tr>
-          <tr><td class="px-5 py-3">Gateway token</td><td class="px-5 py-3 text-gray-400">Your password manager + Hostinger VPS config</td></tr>
-          <tr><td class="px-5 py-3">LLM auth (OAuth path)</td><td class="px-5 py-3 text-gray-400">Refresh token on YOUR VPS. Revoke from ChatGPT / Claude account anytime.</td></tr>
-          <tr><td class="px-5 py-3">API key (manual path, optional)</td><td class="px-5 py-3 text-gray-400">Your password manager + Hostinger VPS config</td></tr>
-          <tr><td class="px-5 py-3">Telegram bot token</td><td class="px-5 py-3 text-gray-400">OpenClaw config on YOUR VPS</td></tr>
-          <tr><td class="px-5 py-3">Pairing code</td><td class="px-5 py-3 text-gray-400">Single-use. Expires after pairing.</td></tr>
+          <tr><td class="px-3 sm:px-5 py-2 sm:py-3">Hostinger password</td><td class="px-3 sm:px-5 py-2 sm:py-3 text-gray-400">Your password manager. Wizard never sees it.</td></tr>
+          <tr><td class="px-3 sm:px-5 py-2 sm:py-3">Credit card / PayPal</td><td class="px-3 sm:px-5 py-2 sm:py-3 text-gray-400">Hostinger. Wizard never sees it.</td></tr>
+          <tr><td class="px-3 sm:px-5 py-2 sm:py-3">Gateway token</td><td class="px-3 sm:px-5 py-2 sm:py-3 text-gray-400">Your password manager + Hostinger VPS</td></tr>
+          <tr><td class="px-3 sm:px-5 py-2 sm:py-3">LLM auth (OAuth)</td><td class="px-3 sm:px-5 py-2 sm:py-3 text-gray-400">Refresh token on YOUR VPS. Revoke from ChatGPT / Claude account anytime.</td></tr>
+          <tr><td class="px-3 sm:px-5 py-2 sm:py-3">API key (manual)</td><td class="px-3 sm:px-5 py-2 sm:py-3 text-gray-400">Your password manager + Hostinger VPS</td></tr>
+          <tr><td class="px-3 sm:px-5 py-2 sm:py-3">Telegram bot token</td><td class="px-3 sm:px-5 py-2 sm:py-3 text-gray-400">OpenClaw config on YOUR VPS</td></tr>
+          <tr><td class="px-3 sm:px-5 py-2 sm:py-3">Pairing code</td><td class="px-3 sm:px-5 py-2 sm:py-3 text-gray-400">Single-use. Expires after pairing.</td></tr>
         </tbody>
       </table>
     </div>
@@ -480,48 +500,61 @@
 </section>
 
 <!-- HEBREW SECTION -->
-<section class="py-20 px-6 rtl bg-gradient-to-b from-transparent via-claw-900/10 to-transparent">
+<section dir="rtl" lang="he" class="py-14 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-transparent via-claw-900/10 to-transparent">
   <div class="max-w-3xl mx-auto">
-    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">בעברית</h2>
-    <p class="text-center text-gray-500 mb-10">סוכן AI עצמאי על שרת שלך, מחובר לטלגרם, ב-15 דקות.</p>
+    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3">בעברית</h2>
+    <p class="text-center text-gray-400 mb-8 sm:mb-10 text-sm sm:text-base">סוכן AI עצמאי על שרת שלך, מחובר לטלגרם — ב-15 דקות.</p>
 
-    <div class="scene-card p-8">
-      <h3 class="text-xl font-bold mb-4">מה זה עושה?</h3>
-      <p class="text-gray-300 leading-relaxed mb-4">
-        Wizard ב-Claude Code שפותח את הדפדפן שלך, מוביל אותך דרך הזמנת VPS ב-Hostinger,
-        יוצר מפתח Anthropic, מקים בוט טלגרם, ומחבר את כולם — בלי שתצטרך לפתוח טאב בעצמך.
+    <div class="scene-card p-5 sm:p-8">
+      <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">מה זה עושה?</h3>
+      <p class="text-gray-300 leading-relaxed mb-3 sm:mb-4 text-sm sm:text-base">
+        <span dir="ltr">Wizard</span> ב-<span dir="ltr">Claude Code</span> שפותח את הדפדפן שלך, מוביל אותך דרך הזמנת <span dir="ltr">VPS</span> ב-<span dir="ltr">Hostinger</span>,
+        מחבר את הסוכן לחשבון <span dir="ltr">ChatGPT</span> שלך דרך <span dir="ltr">OAuth</span> (או יוצר מפתח <span dir="ltr">API</span>), מקים בוט טלגרם, ומחבר את כולם —
+        בלי שתצטרך לפתוח טאב בעצמך.
       </p>
-      <p class="text-gray-400 text-sm">
-        אתה מטפל רק ב-4 דברים: סיסמת חשבון, תשלום, אימות SMS אם נדרש, והודעה ראשונה לבוט.
-        Wizard עושה את כל השאר.
+      <p class="text-gray-400 text-xs sm:text-sm">
+        אתה מטפל רק ב-4 דברים: סיסמת חשבון, תשלום, אישור <span dir="ltr">OAuth</span> בלחיצה, והודעה ראשונה לבוט.
+        ה-<span dir="ltr">wizard</span> עושה את כל השאר.
       </p>
 
-      <h3 class="text-xl font-bold mt-8 mb-4">למה?</h3>
-      <ul class="space-y-2 text-gray-300">
-        <li>✓ סוכן AI אישי שרץ 24/7, בודק מיילים, מזמין טיסות, עוקב אחרי מחירים</li>
-        <li>✓ <strong>Sign in with ChatGPT</strong> — מנוי ChatGPT Plus/Pro שלך מספיק, ללא API key</li>
-        <li>✓ אתה הבעלים — VPS שלך, מפתחות שלך, נתונים שלך</li>
-        <li>✓ עברית מלאה, לא משנה אם הבוט במחשב או בטלגרם</li>
-        <li>✓ עלות: ~$9 לחודש ל-VPS + ($20 ChatGPT Plus אם יש לך כבר)</li>
-        <li>✓ אפס vendor lock-in — תבטל מתי שתרצה, הכל שלך</li>
+      <h3 class="text-lg sm:text-xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4">למה?</h3>
+      <ul class="check-list space-y-2 text-gray-300 text-sm sm:text-base list-none p-0">
+        <li>סוכן <span dir="ltr">AI</span> אישי שרץ 24/7 — בודק מיילים, מזמין טיסות, עוקב אחרי מחירים</li>
+        <li><strong>התחברות עם <span dir="ltr">ChatGPT</span></strong> — מנוי <span dir="ltr">Plus/Pro</span> שלך מספיק, בלי <span dir="ltr">API key</span></li>
+        <li>אתה הבעלים — <span dir="ltr">VPS</span> שלך, מפתחות שלך, נתונים שלך</li>
+        <li>עברית מלאה — לא משנה אם הבוט במחשב או בטלגרם</li>
+        <li>עלות: <span dir="ltr">~$9</span> לחודש ל-<span dir="ltr">VPS</span> + מנוי <span dir="ltr">ChatGPT</span> שכבר יש לך</li>
+        <li>אפס <span dir="ltr">vendor lock-in</span> — תבטל מתי שתרצה, הכל שלך</li>
       </ul>
 
-      <div class="mt-8 text-center">
-        <a href="#install" class="inline-block px-6 py-3 rounded-lg bg-claw-600 hover:bg-claw-500 text-white font-semibold transition">להתקנה</a>
+      <div class="mt-6 sm:mt-8 text-center">
+        <a href="#install" class="inline-block px-6 py-3 rounded-lg bg-claw-600 hover:bg-claw-500 text-white font-semibold transition">להתקנה ←</a>
+      </div>
+    </div>
+
+    <!-- Hebrew install one-liner -->
+    <div class="mt-6 sm:mt-8">
+      <p class="text-center text-gray-400 text-sm mb-3">או — שורה אחת בטרמינל:</p>
+      <div class="term" dir="ltr">
+        <div class="p-3 sm:p-4 font-mono text-xs sm:text-sm flex items-start gap-2">
+          <span class="text-claw-500 select-none flex-none">PS&gt;</span>
+          <code id="code-he" class="flex-1 min-w-0 text-gray-200 break-all">iwr https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.ps1 | iex</code>
+          <button onclick="copyCmd('code-he', this)" class="copy-btn flex-none px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- FOOTER -->
-<footer class="py-12 px-6 border-t border-white/5">
-  <div class="max-w-5xl mx-auto text-center text-sm text-gray-500">
+<footer class="py-10 sm:py-12 px-4 sm:px-6 border-t border-white/5">
+  <div class="max-w-5xl mx-auto text-center text-xs sm:text-sm text-gray-500">
     <div class="mb-3">
       Built on top of <a href="https://openclaw.ai" class="text-claw-400 hover:underline" target="_blank">OpenClaw</a>.
       Open source under <a href="https://github.com/ariel198989/openclaw-quickstart-skill/blob/main/LICENSE" class="text-claw-400 hover:underline" target="_blank">MIT</a>.
     </div>
-    <div class="text-xs text-gray-600">
-      Not affiliated with OpenClaw, Anthropic, Hostinger, or Telegram. Just a wizard that talks to their public APIs.
+    <div class="text-xs text-gray-600 px-2">
+      Not affiliated with OpenClaw, Anthropic, OpenAI, Hostinger, or Telegram. Just a wizard that talks to their public APIs.
     </div>
   </div>
 </footer>
