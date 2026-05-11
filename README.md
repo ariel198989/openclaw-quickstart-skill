@@ -14,10 +14,13 @@ The wizard opens browser tabs, navigates to the right pages, fills forms, and pa
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code) (free CLI)
-- [Playwright MCP](https://github.com/microsoft/playwright-mcp) (free browser automation)
-- Chrome or Edge browser
+- [Playwright MCP](https://github.com/microsoft/playwright-mcp) — **the installer adds this automatically if you don't have it.** No separate step.
+- Chrome, Edge, or Chromium (Playwright will use whichever is installed)
 - Hostinger account + payment method (~$9–14/month VPS)
-- An Anthropic API key (or OpenAI / Gemini / Grok)
+- One of:
+  - ChatGPT Plus / Pro subscription (recommended — Sign in with ChatGPT, flat rate)
+  - Claude.ai Max subscription (Sign in with Claude)
+  - Anthropic / OpenAI / Gemini / Grok API key (pay-as-you-go fallback)
 
 ## Install
 

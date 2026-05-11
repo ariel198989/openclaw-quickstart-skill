@@ -46,16 +46,57 @@ description: |
 
 ---
 
-## שלב 0 — Preflight
+## שלב 0 — Preflight (כולל התקנת Playwright אם חסר)
 
-בדוק ש-Playwright MCP מחובר:
+### 0.1 — בדיקת זמינות
+
+```bash
+claude mcp list 2>&1 | grep -i playwright
+```
+
+אם החזיר שורה — דלג ל-0.3.
+אם ריק — הסקיל יציע התקנה ב-0.2.
+
+### 0.2 — הצעת התקנה (רק אם חסר)
+
+הצג למשתמש:
+
+> Playwright MCP לא מחובר אצלך. בלעדיו ה-wizard לא יכול לפתוח דפדפן ולמלא טפסים.
+>
+> רוצה להתקין עכשיו? (חינם, חד-פעמי, ~30 שניות):
+>
+> **א)** התקן אוטומטית — אריץ `claude mcp add playwright npx @playwright/mcp@latest`
+> **ב)** לא, אעשה לבד מאוחר יותר — אעצור עכשיו
+>
+> אחרי התקנה תצטרך **לעשות restart ל-Claude Code** (`Ctrl+C` + הפעלה מחדש) כדי שיטען את ה-MCP החדש.
+
+אם תשובה = **א**:
+
+```bash
+claude mcp add playwright npx @playwright/mcp@latest 2>&1
+```
+
+אחרי הצלחה — הודע:
+
+> ✓ Playwright MCP הותקן. תעשה restart ל-Claude Code עכשיו, ואז תריץ `/openclaw-quickstart` שוב — נמשיך מאיפה שעצרנו.
+
+עצור את ה-skill. **אסור להמשיך בלי restart** — ה-MCP החדש לא יעבוד בsession הנוכחי.
+
+אם תשובה = **ב**:
+
+> אין בעיה. כשתהיה מוכן — הרץ `claude mcp add playwright npx @playwright/mcp@latest`, restart ל-Claude Code, וחזור עם `/openclaw-quickstart`.
+
+עצור.
+
+### 0.3 — אימות פעולה
+
+אם Playwright מותקן, בדוק שעובד:
 
 ```
 mcp__playwright__browser_navigate({ url: "about:blank" })
 ```
 
-אם נכשל — הודע למשתמש:
-> Playwright MCP לא מחובר. תתקין: `claude mcp add playwright npx @playwright/mcp@latest` ותתחיל מחדש את Claude Code.
+אם שגיאה (`MCP not loaded` / `tool not found`) — כנראה לא היה restart אחרי התקנה. חזור על הוראה ב-0.2.
 
 ---
 
