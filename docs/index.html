@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenClaw Quickstart — zero to self-hosted AI agent in 15 minutes</title>
+<meta name="description" content="Interactive Playwright walkthrough that takes you from zero to a running self-hosted OpenClaw AI agent on Hostinger VPS, connected to Telegram, optionally hardened with Tailscale + UFW + Fail2ban. Free, open source, ~15 minutes." />
+<meta property="og:title" content="OpenClaw Quickstart" />
+<meta property="og:description" content="Zero to self-hosted AI agent on your own VPS in 15 minutes. Wizard drives your browser." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700;800&family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'Heebo', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        },
+        colors: {
+          claw: {
+            50:  '#fef2f4',
+            100: '#fde6e9',
+            200: '#fbd0d6',
+            400: '#f06078',
+            500: '#e63e5c',
+            600: '#d32847',
+            700: '#b11d3b',
+            800: '#931b37',
+            900: '#7d1a34',
+          },
+        },
+        animation: {
+          'blink': 'blink 1s steps(2) infinite',
+          'fade-in': 'fadeIn 0.6s ease-out',
+          'float': 'float 6s ease-in-out infinite',
+        },
+        keyframes: {
+          blink: { '50%': { opacity: '0' } },
+          fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+        },
+      }
+    }
+  }
+</script>
+<style>
+  :root { color-scheme: dark; }
+  body { background: #0a0a0f; color: #e5e7eb; font-family: 'Inter', 'Heebo', system-ui, sans-serif; }
+  .grad-bg {
+    background: radial-gradient(1200px 600px at 20% -10%, rgba(230,62,92,0.18), transparent 60%),
+                radial-gradient(900px 500px at 80% 10%, rgba(120,80,255,0.12), transparent 60%),
+                #0a0a0f;
+  }
+  .grid-bg::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at top, #000 30%, transparent 70%);
+    pointer-events: none;
+  }
+  .term {
+    background: rgba(15,15,22,0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px -20px rgba(230,62,92,0.25), 0 10px 30px -10px rgba(0,0,0,0.5);
+  }
+  .term-bar { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .scene-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    transition: all 0.2s;
+  }
+  .scene-card:hover { border-color: rgba(230,62,92,0.35); transform: translateY(-2px); }
+  .badge-you { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-wiz { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+  .copy-btn { transition: all 0.15s; }
+  .copy-btn:active { transform: scale(0.96); }
+  .rtl { direction: rtl; text-align: right; font-family: 'Heebo', sans-serif; }
+  .gradient-text {
+    background: linear-gradient(135deg, #f06078 0%, #e63e5c 50%, #b8538f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glow-btn {
+    box-shadow: 0 0 0 0 rgba(230,62,92,0.5);
+    transition: all 0.2s;
+  }
+  .glow-btn:hover {
+    box-shadow: 0 0 30px 0 rgba(230,62,92,0.4);
+    transform: translateY(-1px);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 backdrop-blur-xl bg-black/40 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2 font-extrabold text-lg">
+      <span class="text-claw-500">●</span>
+      <span>OpenClaw Quickstart</span>
+    </div>
+    <div class="flex items-center gap-6 text-sm text-gray-400">
+      <a href="#how" class="hover:text-white transition">How it works</a>
+      <a href="#install" class="hover:text-white transition">Install</a>
+      <a href="#security" class="hover:text-white transition">Security</a>
+      <a href="https://github.com/ariel198989/openclaw-quickstart-skill" target="_blank" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition">GitHub →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="grad-bg relative overflow-hidden">
+  <div class="grid-bg absolute inset-0"></div>
+  <div class="relative max-w-6xl mx-auto px-6 pt-20 pb-24">
+    <div class="text-center max-w-3xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400 mb-6">
+        <span class="dot bg-green-400 animate-pulse"></span>
+        Free · Open source · MIT licensed
+      </div>
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight mb-6">
+        Zero to your own AI agent<br /><span class="gradient-text">in 15 minutes.</span>
+      </h1>
+      <p class="text-lg md:text-xl text-gray-400 leading-relaxed mb-10">
+        A Claude Code wizard that drives your browser, sets up a self-hosted OpenClaw agent on your own VPS,
+        wires it to Telegram, and (optionally) hardens it with Tailscale + UFW + Fail2ban.
+        <br />
+        <span class="text-gray-500">You handle password and payment. The wizard does the rest.</span>
+      </p>
+
+      <!-- INSTALL COMMAND -->
+      <div class="term mx-auto max-w-2xl text-left">
+        <div class="term-bar px-4 py-2.5 flex items-center gap-2">
+          <span class="dot bg-red-500/70"></span>
+          <span class="dot bg-yellow-500/70"></span>
+          <span class="dot bg-green-500/70"></span>
+          <div class="flex-1 text-center text-xs text-gray-500 font-mono">Claude Code · install</div>
+        </div>
+        <div class="p-5 font-mono text-sm">
+          <!-- tabs -->
+          <div class="flex gap-1 mb-3 text-xs">
+            <button onclick="showTab('win')" id="tab-win" class="tab-btn px-3 py-1 rounded-md bg-white/10 text-white">Windows</button>
+            <button onclick="showTab('mac')" id="tab-mac" class="tab-btn px-3 py-1 rounded-md text-gray-400 hover:text-white">macOS / Linux</button>
+          </div>
+          <div id="cmd-win" class="cmd-block">
+            <div class="flex items-start gap-2">
+              <span class="text-claw-500 select-none">PS&gt;</span>
+              <code id="code-win" class="flex-1 text-gray-200 break-all">iwr https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.ps1 | iex</code>
+              <button onclick="copyCmd('code-win', this)" class="copy-btn px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
+            </div>
+          </div>
+          <div id="cmd-mac" class="cmd-block hidden">
+            <div class="flex items-start gap-2">
+              <span class="text-claw-500 select-none">$</span>
+              <code id="code-mac" class="flex-1 text-gray-200 break-all">curl -fsSL https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.sh | bash</code>
+              <button onclick="copyCmd('code-mac', this)" class="copy-btn px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-white/5 text-xs text-gray-500">
+            Then in Claude Code: <code class="text-claw-400">/openclaw-quickstart</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm">
+        <a href="https://github.com/ariel198989/openclaw-quickstart-skill" target="_blank" class="glow-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-claw-600 hover:bg-claw-500 text-white font-semibold">
+          View on GitHub
+          <span>→</span>
+        </a>
+        <a href="#how" class="px-5 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white">See what it does</a>
+      </div>
+
+      <div class="mt-10 flex flex-wrap justify-center gap-6 text-xs text-gray-500">
+        <span>✓ No vendor lock-in</span>
+        <span>✓ Keys stay on your machine</span>
+        <span>✓ Open source MIT</span>
+        <span>✓ ~$9/month VPS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section class="py-20 px-6">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">What you actually get</h2>
+    <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto">A real agent running on real hardware that you control. Not a demo. Not a wrapper. Yours.</p>
+    <div class="grid md:grid-cols-3 gap-5">
+      <div class="scene-card p-6">
+        <div class="text-claw-500 text-2xl mb-3">⚡</div>
+        <h3 class="font-semibold text-lg mb-2">Always-on agent</h3>
+        <p class="text-sm text-gray-400">Runs 24/7 on your Hostinger VPS. Checks email, books flights, manages calendar, watches prices — while you sleep.</p>
+      </div>
+      <div class="scene-card p-6">
+        <div class="text-claw-500 text-2xl mb-3">💬</div>
+        <h3 class="font-semibold text-lg mb-2">Chat from anywhere</h3>
+        <p class="text-sm text-gray-400">Connected to Telegram. Add WhatsApp, Discord, Gmail later. Talk to your agent like a person.</p>
+      </div>
+      <div class="scene-card p-6">
+        <div class="text-claw-500 text-2xl mb-3">🔒</div>
+        <h3 class="font-semibold text-lg mb-2">Locked-down</h3>
+        <p class="text-sm text-gray-400">Tailscale private network, UFW firewall, Fail2ban, allowlist to just your number. All optional, all automated.</p>
+      </div>
+      <div class="scene-card p-6">
+        <div class="text-claw-500 text-2xl mb-3">🧠</div>
+        <h3 class="font-semibold text-lg mb-2">Persistent memory</h3>
+        <p class="text-sm text-gray-400">The agent writes to <code class="text-claw-400 text-xs">memory/</code> on the VPS. Remembers preferences, learns over time. Yours to inspect.</p>
+      </div>
+      <div class="scene-card p-6">
+        <div class="text-claw-500 text-2xl mb-3">🔑</div>
+        <h3 class="font-semibold text-lg mb-2">Your keys, your data</h3>
+        <p class="text-sm text-gray-400">API keys live in your Hostinger config. Wizard never touches a third-party server. Cancel anytime — you keep everything.</p>
+      </div>
+      <div class="scene-card p-6">
+        <div class="text-claw-500 text-2xl mb-3">🛠️</div>
+        <h3 class="font-semibold text-lg mb-2">Extensible</h3>
+        <p class="text-sm text-gray-400">OpenClaw runs MCPs, plugins, custom skills. Ask the agent to install whatever it needs — it can.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="py-20 px-6 bg-gradient-to-b from-transparent via-claw-900/5 to-transparent">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">13 scenes. ~15 minutes.</h2>
+    <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto">The wizard drives your browser. You step in only for password, payment, and sending one test message.</p>
+
+    <div class="space-y-3">
+      <!-- Scene 1 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-claw-500 w-10">01</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Preflight + intro</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard</span>
+          </div>
+          <p class="text-sm text-gray-400">Opens Chromium, navigates to openclaw.ai, shows you the product.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">35s</div>
+      </div>
+      <!-- Scene 2 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-claw-500 w-10">02</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Hostinger 1-Click OpenClaw plan</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard</span>
+          </div>
+          <p class="text-sm text-gray-400">Selects KVM 2 plan (2 vCPU / 8 GB RAM / 100 GB NVMe, ~$8.99/mo), adds to cart.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">1m</div>
+      </div>
+      <!-- Scene 3 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-amber-400 w-10">03</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Sign in / sign up</span>
+            <span class="badge-you text-xs px-2 py-0.5 rounded">you</span>
+          </div>
+          <p class="text-sm text-gray-400">Wizard pauses. You handle password. It never types it.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">2m</div>
+      </div>
+      <!-- Scene 4 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-amber-400 w-10">04</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Payment</span>
+            <span class="badge-you text-xs px-2 py-0.5 rounded">you</span>
+          </div>
+          <p class="text-sm text-gray-400">You enter card / PayPal. Wizard waits.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">1m</div>
+      </div>
+      <!-- Scene 5 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-claw-500 w-10">05</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Generate gateway token</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard</span>
+          </div>
+          <p class="text-sm text-gray-400">Creates a 64-char URL-safe random token, fills the form, shows you to save it.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">10s</div>
+      </div>
+      <!-- Scene 6 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-claw-500 w-10">06</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Create Anthropic API key</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard + you</span>
+          </div>
+          <p class="text-sm text-gray-400">Opens Anthropic Console, creates a key named OPENCLAW, screenshots it, pastes it into Hostinger.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">2m</div>
+      </div>
+      <!-- Scene 7 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-claw-500 w-10">07</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Wait for Deploy</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard</span>
+          </div>
+          <p class="text-sm text-gray-400">Polls Hostinger Docker Manager every 30s until container status hits Running.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">1–3m</div>
+      </div>
+      <!-- Scene 8 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-claw-500 w-10">08</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Open OpenClaw web UI</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard</span>
+          </div>
+          <p class="text-sm text-gray-400">Your agent is live. Says hello in the chat.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">10s</div>
+      </div>
+      <!-- Scene 9 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-claw-500 w-10">09</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Create Telegram bot via @BotFather</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard + you</span>
+          </div>
+          <p class="text-sm text-gray-400">Opens Telegram Web, runs /newbot, extracts the bot token automatically.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">2m</div>
+      </div>
+      <!-- Scene 10 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-claw-500 w-10">10</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Pairing</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard</span>
+          </div>
+          <p class="text-sm text-gray-400">Pastes the bot token to OpenClaw, grabs the pairing code, sends it to your bot.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">1m</div>
+      </div>
+      <!-- Scene 11 -->
+      <div class="scene-card p-5 flex items-center gap-4">
+        <div class="text-2xl font-bold text-amber-400 w-10">11</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">Liveness test</span>
+            <span class="badge-you text-xs px-2 py-0.5 rounded">you</span>
+          </div>
+          <p class="text-sm text-gray-400">Send your bot a message. Get a reply. 🎉 Done.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">30s</div>
+      </div>
+      <!-- Scene 12 -->
+      <div class="scene-card p-5 flex items-center gap-4 opacity-75">
+        <div class="text-2xl font-bold text-claw-500 w-10">12</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold">(Optional) Harden the box</span>
+            <span class="badge-wiz text-xs px-2 py-0.5 rounded">wizard</span>
+          </div>
+          <p class="text-sm text-gray-400">Pastes a hardening prompt. The agent itself installs Tailscale, configures UFW, Fail2ban, locks allowlist.</p>
+        </div>
+        <div class="text-xs text-gray-500 font-mono">5m</div>
+      </div>
+    </div>
+
+    <div class="mt-10 text-center">
+      <a href="https://github.com/ariel198989/openclaw-quickstart-skill/blob/main/WALKTHROUGH.md" target="_blank"
+         class="inline-flex items-center gap-2 text-claw-400 hover:text-claw-300 font-semibold">
+        Full scene-by-scene walkthrough on GitHub →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install" class="py-20 px-6">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">Install in one line</h2>
+    <p class="text-center text-gray-500 mb-10">Free. No accounts to create here. The installer just drops the skill into your local Claude Code.</p>
+
+    <ol class="space-y-6">
+      <li class="flex gap-4">
+        <div class="flex-none w-8 h-8 rounded-full bg-claw-600 text-white font-bold flex items-center justify-center">1</div>
+        <div class="flex-1">
+          <h3 class="font-semibold mb-1">Have Claude Code installed?</h3>
+          <p class="text-sm text-gray-400 mb-2">If not, grab it free from <a href="https://claude.com/claude-code" class="text-claw-400 hover:underline" target="_blank">claude.com/claude-code</a>.</p>
+        </div>
+      </li>
+      <li class="flex gap-4">
+        <div class="flex-none w-8 h-8 rounded-full bg-claw-600 text-white font-bold flex items-center justify-center">2</div>
+        <div class="flex-1">
+          <h3 class="font-semibold mb-1">Run the installer</h3>
+          <p class="text-sm text-gray-400 mb-3">Picks up Playwright MCP if missing.</p>
+          <div class="term">
+            <div class="p-4 font-mono text-sm flex items-start gap-2">
+              <span class="text-claw-500 select-none">PS&gt;</span>
+              <code id="code-win-2" class="flex-1 text-gray-200 break-all">iwr https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.ps1 | iex</code>
+              <button onclick="copyCmd('code-win-2', this)" class="copy-btn px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
+            </div>
+            <div class="p-4 font-mono text-sm flex items-start gap-2 border-t border-white/5">
+              <span class="text-claw-500 select-none">$</span>
+              <code id="code-mac-2" class="flex-1 text-gray-200 break-all">curl -fsSL https://raw.githubusercontent.com/ariel198989/openclaw-quickstart-skill/main/install.sh | bash</code>
+              <button onclick="copyCmd('code-mac-2', this)" class="copy-btn px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-xs text-gray-400">Copy</button>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li class="flex gap-4">
+        <div class="flex-none w-8 h-8 rounded-full bg-claw-600 text-white font-bold flex items-center justify-center">3</div>
+        <div class="flex-1">
+          <h3 class="font-semibold mb-1">Restart Claude Code, then type:</h3>
+          <div class="mt-3 inline-block font-mono px-4 py-2 bg-white/5 rounded-lg text-claw-400">/openclaw-quickstart</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section id="security" class="py-20 px-6 bg-gradient-to-b from-transparent via-black/40 to-transparent">
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">Where each secret lives</h2>
+    <p class="text-center text-gray-500 mb-10">No secret touches a third-party server. Read the source — it's all in one file.</p>
+
+    <div class="scene-card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-white/5 text-gray-400">
+          <tr>
+            <th class="text-left px-5 py-3 font-medium">Secret</th>
+            <th class="text-left px-5 py-3 font-medium">Where it lives</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          <tr><td class="px-5 py-3">Hostinger account password</td><td class="px-5 py-3 text-gray-400">Your password manager. Wizard never sees it.</td></tr>
+          <tr><td class="px-5 py-3">Credit card / PayPal</td><td class="px-5 py-3 text-gray-400">Hostinger. Wizard never sees it.</td></tr>
+          <tr><td class="px-5 py-3">Gateway token</td><td class="px-5 py-3 text-gray-400">Your password manager + Hostinger VPS config</td></tr>
+          <tr><td class="px-5 py-3">Anthropic API key</td><td class="px-5 py-3 text-gray-400">Your password manager + Hostinger VPS config</td></tr>
+          <tr><td class="px-5 py-3">Telegram bot token</td><td class="px-5 py-3 text-gray-400">OpenClaw config on YOUR VPS</td></tr>
+          <tr><td class="px-5 py-3">Pairing code</td><td class="px-5 py-3 text-gray-400">Single-use. Expires after pairing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-10 grid md:grid-cols-3 gap-4 text-sm">
+      <div class="scene-card p-5">
+        <div class="text-claw-500 font-semibold mb-1">100% open source</div>
+        <p class="text-gray-400">MIT license. Read <code class="text-claw-400">SKILL.md</code> to see exactly what runs.</p>
+      </div>
+      <div class="scene-card p-5">
+        <div class="text-claw-500 font-semibold mb-1">No telemetry</div>
+        <p class="text-gray-400">Wizard makes zero outbound calls to us. Only to Hostinger / Anthropic / Telegram.</p>
+      </div>
+      <div class="scene-card p-5">
+        <div class="text-claw-500 font-semibold mb-1">You own the box</div>
+        <p class="text-gray-400">Cancel Hostinger anytime. Keys, data, config — all yours to keep or destroy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HEBREW SECTION -->
+<section class="py-20 px-6 rtl bg-gradient-to-b from-transparent via-claw-900/10 to-transparent">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-3xl md:text-4xl font-bold text-center mb-3">בעברית</h2>
+    <p class="text-center text-gray-500 mb-10">סוכן AI עצמאי על שרת שלך, מחובר לטלגרם, ב-15 דקות.</p>
+
+    <div class="scene-card p-8">
+      <h3 class="text-xl font-bold mb-4">מה זה עושה?</h3>
+      <p class="text-gray-300 leading-relaxed mb-4">
+        Wizard ב-Claude Code שפותח את הדפדפן שלך, מוביל אותך דרך הזמנת VPS ב-Hostinger,
+        יוצר מפתח Anthropic, מקים בוט טלגרם, ומחבר את כולם — בלי שתצטרך לפתוח טאב בעצמך.
+      </p>
+      <p class="text-gray-400 text-sm">
+        אתה מטפל רק ב-4 דברים: סיסמת חשבון, תשלום, אימות SMS אם נדרש, והודעה ראשונה לבוט.
+        Wizard עושה את כל השאר.
+      </p>
+
+      <h3 class="text-xl font-bold mt-8 mb-4">למה?</h3>
+      <ul class="space-y-2 text-gray-300">
+        <li>✓ סוכן AI אישי שרץ 24/7, בודק מיילים, מזמין טיסות, עוקב אחרי מחירים</li>
+        <li>✓ אתה הבעלים — VPS שלך, מפתחות שלך, נתונים שלך</li>
+        <li>✓ עברית מלאה, לא משנה אם הבוט במחשב או בטלגרם</li>
+        <li>✓ עלות: ~$9 לחודש ל-VPS + עלות API לפי שימוש</li>
+        <li>✓ אפס vendor lock-in — תבטל מתי שתרצה, הכל שלך</li>
+      </ul>
+
+      <div class="mt-8 text-center">
+        <a href="#install" class="inline-block px-6 py-3 rounded-lg bg-claw-600 hover:bg-claw-500 text-white font-semibold transition">להתקנה</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="py-12 px-6 border-t border-white/5">
+  <div class="max-w-5xl mx-auto text-center text-sm text-gray-500">
+    <div class="mb-3">
+      Built on top of <a href="https://openclaw.ai" class="text-claw-400 hover:underline" target="_blank">OpenClaw</a>.
+      Open source under <a href="https://github.com/ariel198989/openclaw-quickstart-skill/blob/main/LICENSE" class="text-claw-400 hover:underline" target="_blank">MIT</a>.
+    </div>
+    <div class="text-xs text-gray-600">
+      Not affiliated with OpenClaw, Anthropic, Hostinger, or Telegram. Just a wizard that talks to their public APIs.
+    </div>
+  </div>
+</footer>
+
+<script>
+  function copyCmd(id, btn) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.innerText;
+      btn.innerText = '✓ Copied';
+      btn.classList.add('text-green-400');
+      setTimeout(() => { btn.innerText = orig; btn.classList.remove('text-green-400'); }, 1400);
+    });
+  }
+  function showTab(which) {
+    const map = {win: 'cmd-win', mac: 'cmd-mac'};
+    Object.entries(map).forEach(([k,v]) => {
+      const block = document.getElementById(v);
+      const tab   = document.getElementById('tab-'+k);
+      if (k === which) {
+        block.classList.remove('hidden');
+        tab.classList.add('bg-white/10','text-white');
+        tab.classList.remove('text-gray-400');
+      } else {
+        block.classList.add('hidden');
+        tab.classList.remove('bg-white/10','text-white');
+        tab.classList.add('text-gray-400');
+      }
+    });
+  }
+  // Auto-detect OS for default tab
+  (function() {
+    const isMac = navigator.platform.toLowerCase().includes('mac') || navigator.platform.toLowerCase().includes('linux');
+    if (isMac) showTab('mac');
+  })();
+</script>
+
+</body>
+</html>
